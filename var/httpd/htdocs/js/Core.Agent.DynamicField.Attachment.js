@@ -43,7 +43,7 @@ Core.Agent.DynamicField.Attachment = (function (TargetNS){
         });
 // Rother OSS / Customer Interface
         if ( Core.Config.Get('SessionName') === Core.Config.Get('CustomerPanelSessionName') ) {
-            $('.Row > .Field > #oooAttachments').each( function() {
+            $('.Row > .Field > .DFAttachments').each( function() {
                 var Parent = $(this).parent();
                 Parent.replaceWith( Parent.contents() );
             });

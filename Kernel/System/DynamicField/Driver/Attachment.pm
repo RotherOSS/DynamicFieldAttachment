@@ -721,7 +721,7 @@ my $BaseTemplate;
 if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
 
     $BaseTemplate = <<"EOF";
-                    <div id="oooAttachments" class="Field">
+                    <div class="Field DFAttachments">
                         <div class="DnDUploadBox">
 [% INCLUDE "FormElements/CustomerAttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" FormID="$UploadFieldUID"%]
                         </div>
