@@ -2,7 +2,9 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2020 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2021 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2022 Rother OSS GmbH, https://otobo.de/
+# --
+# $origin: otobo - e894aef610208fdc401a4df814ca59658292fbba - Kernel/GenericInterface/Operation/Ticket/TicketGet.pm
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -357,6 +359,7 @@ sub Run {
     # start ticket loop
     TICKET:
     for my $TicketID (@TicketIDs) {
+        my $TicketArticleLimit = $ArticleLimit;
 
         my $TicketObject = $Kernel::OM->Get('Kernel::System::Ticket');
 
