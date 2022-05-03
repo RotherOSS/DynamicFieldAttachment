@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <otobo_package version="1.1">
     <Name>DynamicFieldAttachment</Name>
-    <Version>10.1.1</Version>
+    <Version>0.0.0</Version>
+    <Framework>10.1.x</Framework>
     <Vendor>Rother OSS GmbH</Vendor>
     <URL>https://otobo.de/</URL>
     <License>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</License>
     <Description Lang="en">This package adds dynamic fields of type attachment.</Description>
     <Description Lang="de">Dieses Paket fuegt DynamicFields vom Type Attachment hinzu.</Description>
     <Description Lang="hu">Ez a csomag hozzáadja a melléklet típusú dinamikus mezőket.</Description>
-    <Framework>10.1.x</Framework>
+    <Filelist>
+        <File Location="Custom/Kernel/GenericInterface/Operation/Ticket/TicketGet.pm" Permission="644" ></File>
+        <File Location="Custom/Kernel/GenericInterface/Invoker/Ticket/Common.pm" Permission="644" ></File>
+        <File Location="Kernel/Config/Files/XML/OTOBODynamicFieldAttachment.xml" Permission="644" ></File>
+        <File Location="Kernel/Language/de_OTOBODynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Language/hu_OTOBODynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Modules/AdminDynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Modules/AgentDynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Modules/AjaxDynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Modules/CustomerDynamicFieldAttachment.pm" Permission="644" ></File>
+        <File Location="Kernel/Output/HTML/Templates/Standard/AdminDynamicFieldAttachment.tt" Permission="644" ></File>
+        <File Location="Kernel/System/DynamicField/Driver/Attachment.pm" Permission="644" ></File>
+        <File Location="Kernel/System/DynamicField/AttachmentBackend.pm" Permission="644" ></File>
+        <File Location="scripts/test/GenericInterface/Operation/Ticket/TicketGetAttachment.t" Permission="644" ></File>
+        <File Location="scripts/test/Selenium/Agent/Admin/DynamicField/AdminDynamicFieldAttachment.t" Permission="644" ></File>
+        <File Location="scripts/test/Selenium/Agent/AgentDynamicFieldAttachment.t" Permission="644" ></File>
+        <File Location="scripts/test/Selenium/Customer/CustomerDynamicFieldAttachment.t" Permission="644" ></File>
+        <File Location="var/httpd/htdocs/js/Core.Agent.DynamicField.Attachment.js" Permission="644" ></File>
+        <File Location="doc/en/OTOBODynamicFieldAttachment.pdf" Permission="644" ></File>
+        <File Location="doc/de/OTOBODynamicFieldAttachment.pdf" Permission="644" ></File>
+        <File Location="var/httpd/htdocs/skins/Customer/default/css/Core.DynamicFieldAttachment.css" Permission="644" ></File>
+    </Filelist>
     <IntroInstall Lang="en" Title="Install Information" Type="pre">
         &lt;br/&gt;
         &lt;strong&gt;WELCOME&lt;/strong&gt;
@@ -37,7 +59,7 @@
         &lt;strong&gt;ACHTUNG&lt;/strong&gt;
         &lt;br/&gt;
         &lt;br/&gt;
-	Bitte vergessen Sie nicht, DynamicFieldAttachments nach der Installation anzulegen und diese über die Option Admin -> Dynamische Felder Oberflächen für die benötigten Frontends zu aktivieren.&lt;br/&gt;
+        Bitte vergessen Sie nicht, DynamicFieldAttachments nach der Installation anzulegen und diese über die Option Admin -> Dynamische Felder Oberflächen für die benötigten Frontends zu aktivieren.&lt;br/&gt;
         &lt;br/&gt;
         &lt;br/&gt;
         ((enjoy))&lt;br/&gt;
@@ -264,26 +286,4 @@
         ((enjoy))&lt;br/&gt;
         &lt;br/&gt;
     </IntroUpgrade>
-    <Filelist>
-        <File Location="Custom/Kernel/GenericInterface/Operation/Ticket/TicketGet.pm" Permission="644" ></File>
-        <File Location="Custom/Kernel/GenericInterface/Invoker/Ticket/Common.pm" Permission="644" ></File>
-        <File Location="Kernel/Config/Files/XML/OTOBODynamicFieldAttachment.xml" Permission="644" ></File>
-        <File Location="Kernel/Language/de_OTOBODynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Language/hu_OTOBODynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Modules/AdminDynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Modules/AgentDynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Modules/AjaxDynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Modules/CustomerDynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Output/HTML/Templates/Standard/AdminDynamicFieldAttachment.tt" Permission="644" ></File>
-        <File Location="Kernel/System/DynamicField/Driver/Attachment.pm" Permission="644" ></File>
-        <File Location="Kernel/System/DynamicField/AttachmentBackend.pm" Permission="644" ></File>
-        <File Location="scripts/test/GenericInterface/Operation/Ticket/TicketGetAttachment.t" Permission="644" ></File>
-        <File Location="scripts/test/Selenium/Agent/Admin/DynamicField/AdminDynamicFieldAttachment.t" Permission="644" ></File>
-        <File Location="scripts/test/Selenium/Agent/AgentDynamicFieldAttachment.t" Permission="644" ></File>
-        <File Location="scripts/test/Selenium/Customer/CustomerDynamicFieldAttachment.t" Permission="644" ></File>
-        <File Location="var/httpd/htdocs/js/Core.Agent.DynamicField.Attachment.js" Permission="644" ></File>
-        <File Location="doc/en/OTOBODynamicFieldAttachment.pdf" Permission="644" ></File>
-        <File Location="doc/de/OTOBODynamicFieldAttachment.pdf" Permission="644" ></File>
-        <File Location="var/httpd/htdocs/skins/Customer/default/css/Core.DynamicFieldAttachment.css" Permission="644" ></File>
-    </Filelist>
 </otobo_package>

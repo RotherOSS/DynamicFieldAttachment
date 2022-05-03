@@ -2,7 +2,7 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2020 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2021 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2022 Rother OSS GmbH, https://otobo.de/
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -23,6 +23,8 @@ use v5.24;
 use MIME::Base64;
 use Storable;
 use Kernel::System::VariableCheck qw(:all);
+
+our $ObjectManagerDisabled = 1;
 
 =head1 NAME
 
@@ -571,9 +573,10 @@ sub PrepareRequest {
             DynamicFieldConfig => $DynamicField,
             ObjectID           => $TicketID,
         );
-# ---
-# OTOBODynamicFieldAttachment
-# ---
+
+        # ---
+        # OTOBODynamicFieldAttachment
+        # ---
         if (
             $DynamicField->{FieldType} eq 'Attachment'
             && IsArrayRefWithData($Value)
@@ -583,7 +586,7 @@ sub PrepareRequest {
 
             # Get content.
             ATTACHMENT:
-            for my $Attachment ( @{ $Value } ) {
+            for my $Attachment ( @{$Value} ) {
                 my $Data = $DynamicFieldBackendObject->ValueGet(
                     DynamicFieldConfig => $DynamicField,
                     ObjectID           => $TicketID,
@@ -605,7 +608,8 @@ sub PrepareRequest {
 
             $Value = \@AttachmentValue;
         }
-# ---
+
+        # ---
 
         if ( defined $Value ) {
             push @DynamicFieldTicketData, {

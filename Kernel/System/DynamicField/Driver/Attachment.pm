@@ -2,7 +2,7 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2020 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2020 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2022 Rother OSS GmbH, https://otobo.de/
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,8 @@
 
 package Kernel::System::DynamicField::Driver::Attachment;
 
+## nofilter(TidyAll::Plugin::OTOBO::Perl::ParamObject)
+
 use strict;
 use warnings;
 
@@ -28,6 +30,7 @@ our @ObjectDependencies = (
     'Kernel::System::Main',
     'Kernel::System::VirtualFS',
     'Kernel::System::Web::UploadCache',
+    'Kernel::System::Web::Request',
     'Kernel::System::DynamicField::Backend',
     'Kernel::System::Ticket',
     'Kernel::System::Ticket::Article',
@@ -198,7 +201,7 @@ sub ValueGet {
 
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
-            Message =>
+            Message  =>
                 'Could not validate $Param{Filename} in DynamicFieldAttachment ValueGetDownload!',
         );
 
@@ -416,7 +419,7 @@ sub ValueDelete {
             if ( !$Success ) {
                 $Kernel::OM->Get('Kernel::System::Log')->Log(
                     Priority => 'error',
-                    Message =>
+                    Message  =>
                         "Cannot delete attachments from $Param{DynamicFieldConfig}->{ObjectType} $Param{ObjectID}",
                 );
 
@@ -475,7 +478,7 @@ sub SingleValueDelete {
                 if ( !$Success ) {
                     $Kernel::OM->Get('Kernel::System::Log')->Log(
                         Priority => 'error',
-                        Message =>
+                        Message  =>
                             "Cannot delete attachments from $Param{DynamicFieldConfig}->{ObjectType} $Param{ObjectID}",
                     );
 
@@ -513,7 +516,7 @@ sub SingleValueDelete {
         if ( !$Success ) {
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
-                Message =>
+                Message  =>
                     "Cannot delete attachments from $Param{DynamicFieldConfig}->{ObjectType} $Param{ObjectID}",
             );
 
@@ -530,7 +533,7 @@ sub SingleValueDelete {
         if ( !$Success ) {
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
-                Message =>
+                Message  =>
                     "Cannot update attachments from $Param{DynamicFieldConfig}->{ObjectType} $Param{ObjectID}",
             );
 
@@ -713,14 +716,14 @@ sub EditFieldRender {
     my $ServerErrorHTML = '';
     my $IsMandatory     = $Param{Mandatory} || '0';
 
-# Rother OSS / ToDo: Need to redesign DynamicFields, we don´t like to use ParamObject in Kernel/System
-my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
-my $InterfaceAction = $ParamObject->{Query}->{param}->{Action}[0];
-my $BaseTemplate;
+    # Rother OSS / ToDo: Need to redesign DynamicFields, we don´t like to use ParamObject in Kernel/System
+    my $ParamObject     = $Kernel::OM->Get('Kernel::System::Web::Request');
+    my $InterfaceAction = $ParamObject->{Query}->{param}->{Action}[0];
+    my $BaseTemplate;
 
-if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
+    if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
 
-    $BaseTemplate = <<"EOF";
+        $BaseTemplate = <<"EOF";
                     <div class="Field DFAttachments">
                         <div class="DnDUploadBox">
 [% INCLUDE "FormElements/CustomerAttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" FormID="$UploadFieldUID"%]
@@ -728,14 +731,16 @@ if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
                     </div>
 EOF
 
-} else {
+    }
+    else {
 
-    $BaseTemplate = <<"EOF";
+        $BaseTemplate = <<"EOF";
 [% INCLUDE "FormElements/AttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" FormID="$UploadFieldUID"%]
 EOF
 
-}
-# EO Rother OSS ToDo
+    }
+
+    # EO Rother OSS ToDo
 
     my $Index = 1;
     for my $Item (@Values) {
@@ -1100,9 +1105,9 @@ EOF
     $Template .= '
                     <a href="[% Env("CGIHandle") %]?Action='
         . (
-        $LayoutObject->{UserType} eq 'Customer'
-        ? 'CustomerDynamicFieldAttachment'
-        : 'AgentDynamicFieldAttachment'
+            $LayoutObject->{UserType} eq 'Customer'
+            ? 'CustomerDynamicFieldAttachment'
+            : 'AgentDynamicFieldAttachment'
         )
         . ';Filename=[% Data.Filename | uri %];DynamicFieldID=[% Data.DynamicFieldID | uri %];Object=[% Data.Object | uri %];ObjectID=[% Data.ObjectID | uri %]" target="attachment"[% Data.FieldClass | html %]>[% Data.Filename | html %]</a>';
 
@@ -1162,7 +1167,6 @@ EOF
 
         for my $Item (@Values) {
 
-            my $Object;
             my $ObjectID;
             my $FieldID    = $Param{DynamicFieldConfig}->{ID};
             my $ObjectType = $Param{DynamicFieldConfig}->{ObjectType};
