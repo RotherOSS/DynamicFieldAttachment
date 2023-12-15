@@ -112,7 +112,7 @@
                 <div class="Content">
                     <fieldset class="TableLike">
                         <div class="SpacingTop"></div>
-                        <label class="Mandatory" for="NumberOfAttachments"><span class="Marker">*</span> [% Translate("Maximum amount of attachments") | html %]:</label>
+                        <label class="Mandatory" for="NumberOfFiles"><span class="Marker">*</span> [% Translate("Maximum amount of attachments") | html %]:</label>
                         <div class="Field">
                             <input id="NumberOfFiles" class="W50pc [% Data.NumberOfFilesServerError | html %] Validate_Required" type="text" maxlength="200" value="[% Data.NumberOfFiles | html %]" name="NumberOfFiles"/>
                             <div id="NumberOfFilesError" class="TooltipErrorMessage"><p>[% Translate("This field is required and must be numeric.") | html %]</p></div>
