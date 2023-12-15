@@ -21,6 +21,17 @@ package Kernel::System::DynamicField::Driver::Attachment;
 use strict;
 use warnings;
 
+use parent qw(Kernel::System::DynamicField::Driver::BaseText);
+
+# core modules
+use MIME::Base64 qw();
+
+# CPAN modules
+
+# OTOBO modules
+use Kernel::Language qw(Translatable);
+use Kernel::System::VariableCheck qw(:all);
+
 our @ObjectDependencies = (
     'Kernel::Config',
     'Kernel::Output::HTML::Layout',
@@ -37,13 +48,6 @@ our @ObjectDependencies = (
     'Kernel::System::YAML',
 );
 
-use Kernel::Language qw(Translatable);
-use Kernel::System::VariableCheck qw(:all);
-
-use MIME::Base64 qw();
-
-use parent qw(Kernel::System::DynamicField::Driver::BaseText);
-
 =head1 NAME
 
 Kernel::System::DynamicField::Driver::Attachment
@@ -57,9 +61,7 @@ DynamicFields Attachment Driver delegate
 This module implements the public interface of L<Kernel::System::DynamicField::Backend>.
 Please look there for a detailed reference of the functions.
 
-=over 4
-
-=item new()
+=head2 new()
 
 usually, you want to create an instance of this
 by using Kernel::System::DynamicField::Backend->new();
@@ -120,7 +122,7 @@ sub new {
     return $Self;
 }
 
-=item ValueGet()
+=head2 ValueGet()
 
 returns a hash holding the file as well as it's info
 
@@ -1528,7 +1530,7 @@ sub ValueLookup {
     return $Value;
 }
 
-=item AttachmentDownload()
+=head2 AttachmentDownload()
 
 This function is used to get the output headers for the download
 
@@ -1662,15 +1664,3 @@ sub AttachmentDownload {
 }
 
 1;
-
-=back
-
-=head1 TERMS AND CONDITIONS
-
-This software is part of the OTOBO project (L<https://otobo.org/>).
-
-This software comes with ABSOLUTELY NO WARRANTY. For details, see
-the enclosed file COPYING for license information (GPL). If you
-did not receive this file, see L<https://www.gnu.org/licenses/gpl-3.0.txt>.
-
-=cut
