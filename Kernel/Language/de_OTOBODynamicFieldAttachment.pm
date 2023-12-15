@@ -2,7 +2,7 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2020 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2022 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2023 Rother OSS GmbH, https://otobo.de/
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -24,7 +24,7 @@ sub Data {
     my $Self = shift;
 
     # Template: AdminDynamicFieldAttachment
-    $Self->{Translation}->{'Field'} = 'Feld';
+    $Self->{Translation}->{'Field'}                         = 'Feld';
     $Self->{Translation}->{'Maximum amount of attachments'} = 'Maximale Anzahl an Anhängen';
     $Self->{Translation}->{'Change this, if you need more or less attachments to be stored in this dynamic field.'} =
         'Ändern Sie diese Einstellung, wenn Sie mehr oder weniger Dokumente in dieses DynamicField speichern wollen.';
@@ -37,11 +37,11 @@ sub Data {
         'Die maximale Anzahl der Anhänge muss eine positive Ganzzahl sein.';
     $Self->{Translation}->{'The maximum attachment size for this dynamic field of type attachment must be a positive number.'} =
         'Die maximale Größe jedes Anhangs muss eine positive Ganzzahl sein.';
-    $Self->{Translation}->{'Need ValidID!'} = 'Benötige ValidID!';
-    $Self->{Translation}->{'Could not create the new field.'} = 'Das neue Feld konnte nicht erstellt werden.';
-    $Self->{Translation}->{'Need ID!'} = 'Benötige ID!';
+    $Self->{Translation}->{'Need ValidID!'}                            = 'Benötige ValidID!';
+    $Self->{Translation}->{'Could not create the new field.'}          = 'Das neue Feld konnte nicht erstellt werden.';
+    $Self->{Translation}->{'Need ID!'}                                 = 'Benötige ID!';
     $Self->{Translation}->{'Could not get data for dynamic field %s!'} = 'Es konnten keine Daten für das dynamische Feld %s abgerufen werden!';
-    $Self->{Translation}->{'Could not update the field %s!'} = 'Das Feld %s konnte nicht aktualisiert werden!';
+    $Self->{Translation}->{'Could not update the field %s!'}           = 'Das Feld %s konnte nicht aktualisiert werden!';
 
     # Perl Module: Kernel/Modules/AjaxDynamicFieldAttachment.pm
     $Self->{Translation}->{'Success'} = 'Erfolg';
@@ -50,20 +50,18 @@ sub Data {
     $Self->{Translation}->{'Disable Attachments'} = 'Anhänge deaktivieren';
 
     # SysConfig
-    $Self->{Translation}->{'Dynamic Fields Attachment Backend GUI'} = 'Backend-GUI für Anhänge dynamischer Felder';
-    $Self->{Translation}->{'Dynamic Fields Attachment download frontend'} = 'Download-Frontend für Anhänge dynamischer Felder';
-    $Self->{Translation}->{'Dynamic field backend registration.'} = 'Backend-Registrierung für dynamische Felder.';
-    $Self->{Translation}->{'Dynamic fields extension.'} = 'Dynamische Felder Erweiterung.';
+    $Self->{Translation}->{'Dynamic Fields Attachment Backend GUI'}                 = 'Dynamic Fields-Oberfläche für Anhänge';
+    $Self->{Translation}->{'Dynamic Fields Attachment download frontend'}           = 'Dynamic Fields-Download-Frontend für Anhänge';
+    $Self->{Translation}->{'Dynamic field backend registration.'}                   = 'Backend-Registrierung für dynamische Felder.';
+    $Self->{Translation}->{'Dynamic fields extension.'}                             = 'Dynamische Felder Erweiterung.';
     $Self->{Translation}->{'Frontend module registration for the admin interface.'} = 'Frontend-Modulregistrierung für das Administrator-Interface.';
 
-
     push @{ $Self->{JavaScriptStrings} // [] }, (
-    'Cancel',
-    'Delete',
-    'Disable',
-    'Disable Attachments',
+        'Cancel',
+        'Delete',
+        'Disable',
+        'Disable Attachments',
     );
-
 }
 
 1;
