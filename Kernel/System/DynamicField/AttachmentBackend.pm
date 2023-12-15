@@ -19,11 +19,16 @@ package Kernel::System::DynamicField::AttachmentBackend;
 use strict;
 use warnings;
 
+# core modules
+
+# CPAN modules
+
+# OTOBO modules
+use Kernel::System::VariableCheck qw(:all);
+
 our @ObjectDependencies = (
     'Kernel::System::Log',
 );
-
-use Kernel::System::VariableCheck qw(:all);
 
 =head1 NAME
 
@@ -35,11 +40,7 @@ DynamicFields backend interface for attachments
 
 =head1 PUBLIC INTERFACE
 
-=over 4
-
-=cut
-
-=item AttachmentDownload()
+=head2 AttachmentDownload()
 
 This function is used to get the output headers for the download
 
@@ -109,18 +110,15 @@ sub AttachmentDownload {
     return $Self->{$DynamicFieldBackend}->AttachmentDownload(%Param);
 }
 
-=item SingleValueDelete()
+=head2 SingleValueDelete()
 
 This function is used to get the output headers for the download
 
-    my $Value = $BackendObject->AttachmentDownload(
+    my $Value = $BackendObject->SingleValueDelete(
         ObjectID           => $DynamicFieldObjectID,
-        Object             => $DynamicFieldObject,  # Ticket or Article
-        DynamicFieldID     => $DynamicFieldID,
-        Filename           => $AttachmentFileName,
+        FieldID            => $FieldID,
+        FileID             => $FileID,
         DynamicFieldConfig => $DynamicFieldConfig,  # complete config of the DynamicField
-        TicketObject       => $TicketObject,
-        LayoutObject       => $LayoutObject,
     );
 
     Returns $Attachment;
@@ -180,15 +178,3 @@ sub SingleValueDelete {
 }
 
 1;
-
-=back
-
-=head1 TERMS AND CONDITIONS
-
-This software is part of the OTOBO project (L<https://otobo.org/>).
-
-This software comes with ABSOLUTELY NO WARRANTY. For details, see
-the enclosed file COPYING for license information (GPL). If you
-did not receive this file, see L<https://www.gnu.org/licenses/gpl-3.0.txt>.
-
-=cut

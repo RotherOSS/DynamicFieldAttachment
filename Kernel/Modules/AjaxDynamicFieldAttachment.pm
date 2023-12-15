@@ -19,6 +19,11 @@ package Kernel::Modules::AjaxDynamicFieldAttachment;
 use strict;
 use warnings;
 
+# core modules
+
+# CPAN modules
+
+# OTOBO modules
 use Kernel::System::VariableCheck qw(:all);
 use Kernel::Language qw(Translatable);
 
@@ -37,13 +42,12 @@ sub new {
 sub Run {
     my ( $Self, %Param ) = @_;
 
-    # get param object
-    my $ParamObject       = $Kernel::OM->Get('Kernel::System::Web::Request');
-    my $UploadCacheObject = $Kernel::OM->Get('Kernel::System::Web::UploadCache');
-    my $LayoutObject      = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
+    # get necessary objects
+    my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
+    my $LayoutObject = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
 
     # get form id
-    $Self->{FormID} = $Kernel::OM->Get('Kernel::System::Web::Request')->GetParam( Param => 'FormID' );
+    $Self->{FormID} = $ParamObject->GetParam( Param => 'FormID' );
 
     if ( !$Self->{FormID} ) {
         return $LayoutObject->FatalError(

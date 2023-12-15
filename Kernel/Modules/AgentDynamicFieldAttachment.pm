@@ -36,7 +36,7 @@ sub new {
 sub Run {
     my ( $Self, %Param ) = @_;
 
-    # Ticket permission are checked inside AttachmentDownload
+    # Object permission are checked inside AttachmentDownload
 
     # get needed objects
     my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
