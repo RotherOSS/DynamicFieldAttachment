@@ -175,11 +175,11 @@ sub ValueGet {
     }
 
     for my $Needed (qw(Filename)) {
-        if ( !$Needed ) {
+        if ( !$Param{$Needed} ) {
 
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
-                Message  => 'Got no $Needed in DynamicField Driver Attachment ValueGet!',
+                Message  => "Got no $Needed in DynamicField Driver Attachment ValueGet!",
             );
             return;
         }
