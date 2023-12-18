@@ -666,6 +666,7 @@ sub EditFieldRender {
     $MaximumFileSize = ( $MaximumFileSize * 1024 * 1024 );
     my $ServerErrorHTML = '';
     my $IsMandatory     = $Param{Mandatory} || '0';
+    my $IsACLHidden     = $Param{ACLHidden} || '0';
 
     my $InterfaceAction = $Param{ParamObject}->{Query}->{param}->{Action}[0];
     my $BaseTemplate;
@@ -675,7 +676,7 @@ sub EditFieldRender {
         $BaseTemplate = <<"EOF";
                     <div class="Field DFAttachments">
                         <div class="DnDUploadBox">
-[% INCLUDE "FormElements/CustomerAttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" FormID="$UploadFieldUID"%]
+[% INCLUDE "FormElements/CustomerAttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" ACLHidden="$IsACLHidden" FormID="$UploadFieldUID"%]
                         </div>
                     </div>
 EOF
@@ -684,7 +685,7 @@ EOF
     else {
 
         $BaseTemplate = <<"EOF";
-[% INCLUDE "FormElements/AttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" FormID="$UploadFieldUID"%]
+[% INCLUDE "FormElements/AttachmentList.tt" FieldID="$FieldName" FieldName="$FieldName" MaxFiles="$NumberOfFiles" MaxSizePerFile="$MaximumFileSize" Mandatory="$IsMandatory" ACLHidden="$IsACLHidden" FormID="$UploadFieldUID"%]
 EOF
 
     }
