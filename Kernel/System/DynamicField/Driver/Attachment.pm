@@ -80,10 +80,10 @@ sub new {
     # Settings that are specific to the Attachment dynamic field
 
     # set Attachment specific field behaviors unless an extension already set it
-    $Self->{Behaviors}->{IsSortable}            //= 0;
-    $Self->{Behaviors}->{IsStatsCondition}      //= 0;
-    $Self->{Behaviors}->{IsAttachment}          //= 0;
-    $Self->{Behaviors}->{IsSetCapable}          //= 0;
+    $Self->{Behaviors}->{IsSortable}       //= 0;
+    $Self->{Behaviors}->{IsStatsCondition} //= 0;
+    $Self->{Behaviors}->{IsAttachment}     //= 0;
+    $Self->{Behaviors}->{IsSetCapable}     //= 0;
 
     return $Self;
 }
@@ -112,7 +112,7 @@ sub ValueGet {
 
     return unless $DFValue;
     return unless IsArrayRefWithData($DFValue);
-    return unless IsHashRefWithData($DFValue->[0]);
+    return unless IsHashRefWithData( $DFValue->[0] );
 
     my $YAMLObject = $Kernel::OM->Get('Kernel::System::YAML');
 
@@ -327,7 +327,6 @@ sub ValueSet {
     # get dynamicfieldvalue object
     my $DynamicFieldValueObject = $Kernel::OM->Get('Kernel::System::DynamicFieldValue');
 
-    # TODO verify that valueset now works with no values also
     # if all values got deleted we have to call ValueDelete
     # because ValueSet is unable to work on no existing values
     if ( !@ValueText ) {
@@ -458,7 +457,6 @@ sub SingleValueDelete {
     # get dynamicfieldvalue object
     my $DynamicFieldValueObject = $Kernel::OM->Get('Kernel::System::DynamicFieldValue');
 
-    # TODO verify that valueset now works with no values
     # if all values got deleted we have to call ValueDelete
     # because ValueSet is unable to work on no existing values
     if ( !@ValueText ) {
@@ -505,7 +503,6 @@ sub AllValuesDelete {
     # get database object
     my $DBObject = $Kernel::OM->Get('Kernel::System::DB');
 
-    # TODO fucking dangerous, at least check if the field id actually belongs to an attachment df!
     return if !$DBObject->Prepare(
         SQL => '
             SELECT id, value_text, value_date, value_int
@@ -673,7 +670,6 @@ sub EditFieldRender {
     my $InterfaceAction = $Param{ParamObject}->{Query}->{param}->{Action}[0];
     my $BaseTemplate;
 
-    # TODO check if this check can be replaced with $LayoutObject->{UserType}
     if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
 
         $BaseTemplate = <<"EOF";
@@ -735,7 +731,6 @@ EOF
 sub EditFieldValueGet {
     my ( $Self, %Param ) = @_;
 
-    # TODO check if this is necessary
     # if we don't have a ParamObject
     # we were called not by a FormSubmit
     # so there are no Params to get and return
@@ -777,7 +772,6 @@ sub EditFieldValueGet {
             );
         }
         else {
-            # TODO check what this is for
             return [];
         }
     }
