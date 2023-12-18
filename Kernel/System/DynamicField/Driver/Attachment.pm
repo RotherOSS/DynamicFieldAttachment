@@ -1548,6 +1548,22 @@ sub AttachmentDownload {
         }
         $ObjectID = $Object{TicketID};
     }
+    elsif ( $Param{Object} eq 'ITSMConfigItem' ) {
+
+        %Object = %{ $ObjectModuleObject->ConfigItemGet(
+            ConfigItemID  => $Param{ObjectID},
+            DynamicFields => 0,
+            UserID        => 1,
+        ) };
+        if ( !$Object{ConfigItemID} ) {
+            $Kernel::OM->Get('Kernel::System::Log')->Log(
+                Message  => "No ConfigItem found for ID ($Param{ObjectID})!",
+                Priority => 'error',
+            );
+            return $LayoutObject->ErrorScreen();
+        }
+        $ObjectID = $Object{ConfigItemID};
+    }
     else {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Message  => "Could not determine Object for $Param{Object}!",
@@ -1566,6 +1582,15 @@ sub AttachmentDownload {
                 UserID   => $Param{UserID}
             );
         }
+        elsif ( $Param{Object} eq 'ITSMConfigItem' ) {
+            $Access = $ObjectModuleObject->CustomerPermission(
+                Type   => 'ro',
+                Scope  => 'Item',
+                ItemID => $Param{ObjectID},
+                UserID => $Param{UserID}
+            );
+
+        }
     }
     else {
         if ( $Param{Object} eq 'Article' || $Param{Object} eq 'Ticket' ) {
@@ -1573,6 +1598,14 @@ sub AttachmentDownload {
                 Type     => 'ro',
                 TicketID => $Param{ObjectID},
                 UserID   => $Param{UserID}
+            );
+        }
+        elsif ( $Param{Object} eq 'ITSMConfigItem' ) {
+            $Access = $ObjectModuleObject->Permission(
+                Type   => 'ro',
+                Scope  => 'Item',
+                ItemID => $Param{ObjectID},
+                UserID => $Param{UserID}
             );
         }
     }
