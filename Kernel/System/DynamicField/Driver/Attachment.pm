@@ -18,8 +18,11 @@ package Kernel::System::DynamicField::Driver::Attachment;
 
 ## nofilter(TidyAll::Plugin::OTOBO::Perl::ParamObject)
 
+use v5.24;
 use strict;
 use warnings;
+use namespace::autoclean;
+use utf8;
 
 use parent qw(Kernel::System::DynamicField::Driver::BaseText);
 
@@ -52,7 +55,7 @@ our @ObjectDependencies = (
 
 Kernel::System::DynamicField::Driver::Attachment
 
-=head1 SYNOPSIS
+=head1 DESCRIPTION
 
 DynamicFields Attachment Driver delegate
 
@@ -69,55 +72,18 @@ by using Kernel::System::DynamicField::Backend->new();
 =cut
 
 sub new {
-    my ( $Type, %Param ) = @_;
+    my ($Type) = @_;
 
-    # allocate new hash for object
-    my $Self = {};
-    bless( $Self, $Type );
+    # Call constructor of the base class.
+    my $Self = $Type->SUPER::new;
 
-    # set field behaviors
-    $Self->{Behaviors} = {
-        'IsACLReducible'               => 0,
-        'IsNotificationEventCondition' => 1,
-        'IsSortable'                   => 0,
-        'IsFiltrable'                  => 0,
-        'IsStatsCondition'             => 0,
-        'IsCustomerInterfaceCapable'   => 1,
-        'IsAttachement'                => 1,
-    };
+    # Settings that are specific to the Attachment dynamic field
 
-    # get the Dynamic Field Backend custmom extensions
-    my $DynamicFieldDriverExtensions
-        = $Kernel::OM->Get('Kernel::Config')->Get('DynamicFields::Extension::Driver::Text');
-
-    EXTENSION:
-    for my $ExtensionKey ( sort keys %{$DynamicFieldDriverExtensions} ) {
-
-        # skip invalid extensions
-        next EXTENSION if !IsHashRefWithData( $DynamicFieldDriverExtensions->{$ExtensionKey} );
-
-        # create a extension config shortcut
-        my $Extension = $DynamicFieldDriverExtensions->{$ExtensionKey};
-
-        # check if extension has a new module
-        if ( $Extension->{Module} ) {
-
-            # check if module can be loaded
-            if ( !$Kernel::OM->Get('Kernel::System::Main')->RequireBaseClass( $Extension->{Module} ) ) {
-                die "Can't load dynamic fields backend module"
-                    . " $Extension->{Module}! $@";
-            }
-        }
-
-        # check if extension contains more behabiors
-        if ( IsHashRefWithData( $Extension->{Behaviors} ) ) {
-
-            %{ $Self->{Behaviors} } = (
-                %{ $Self->{Behaviors} },
-                %{ $Extension->{Behaviors} }
-            );
-        }
-    }
+    # set Attachment specific field behaviors unless an extension already set it
+    $Self->{Behaviors}->{IsSortable}            //= 0;
+    $Self->{Behaviors}->{IsStatsCondition}      //= 0;
+    $Self->{Behaviors}->{IsAttachment}          //= 0;
+    $Self->{Behaviors}->{IsSetCapable}          //= 0;
 
     return $Self;
 }
@@ -137,29 +103,16 @@ returns a hash holding the file as well as it's info
 
 sub ValueGet {
     my ( $Self, %Param ) = @_;
-    my $Download = $Param{Download} || 0;
 
-    for my $Needed (qw(DynamicFieldConfig ObjectID)) {
-        if ( !$Param{$Needed} ) {
-
-            $Kernel::OM->Get('Kernel::System::Log')->Log(
-                Priority => 'error',
-                Message  => "Got no $Needed in DynamicField Driver Attachment ValueGet!",
-            );
-
-            return;
-        }
-
-    }
-
+    # get raw values of the dynamic field
     my $DFValue = $Kernel::OM->Get('Kernel::System::DynamicFieldValue')->ValueGet(
-        FieldID  => $Param{DynamicFieldConfig}->{ID},
+        FieldID  => $Param{DynamicFieldConfig}{ID},
         ObjectID => $Param{ObjectID},
     );
 
-    return if !$DFValue;
-    return if !IsArrayRefWithData($DFValue);
-    return if !IsHashRefWithData( $DFValue->[0] );
+    return unless $DFValue;
+    return unless IsArrayRefWithData($DFValue);
+    return unless IsHashRefWithData($DFValue->[0]);
 
     my $YAMLObject = $Kernel::OM->Get('Kernel::System::YAML');
 
@@ -172,7 +125,7 @@ sub ValueGet {
         ) || {};
     }
 
-    if ( !$Download ) {
+    if ( !$Param{Download} ) {
         return \@ReturnData;
     }
 
@@ -181,7 +134,7 @@ sub ValueGet {
 
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
-                Message  => 'Got no $Needed in DynamicField Driver Attachment ValueGet!',
+                Message  => "Got no $Needed in DynamicField Driver Attachment ValueGet!",
             );
             return;
         }
@@ -204,7 +157,7 @@ sub ValueGet {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
             Message  =>
-                'Could not validate $Param{Filename} in DynamicFieldAttachment ValueGetDownload!',
+                "Could not validate $Param{Filename} in DynamicFieldAttachment ValueGetDownload!",
         );
 
         return;
@@ -265,8 +218,7 @@ sub ValueSet {
     # so we're fetching the FieldID (unique)
     my $FieldID = $Param{DynamicFieldConfig}->{ID};
 
-    # as well as the ObjectType (Article or Ticket)
-    # which will be used in the directory path
+    # as well as the ObjectType which will be used in the directory path
     my $ObjectType = $Param{DynamicFieldConfig}->{ObjectType};
 
     # get virtualfs object
@@ -332,8 +284,6 @@ sub ValueSet {
     for my $Item (@Attachments) {
 
         # Now we'll try to store the cached object
-        # ObjectID = TicketID or ArticleID
-        # ObjectType = Ticket or Article
         my $Success = $VirtualFSObject->Write(
             Filename    => "DynamicField/$FieldID/$ObjectType/$Param{ObjectID}/$Item->{Filename}",
             Mode        => 'binary',
@@ -377,6 +327,7 @@ sub ValueSet {
     # get dynamicfieldvalue object
     my $DynamicFieldValueObject = $Kernel::OM->Get('Kernel::System::DynamicFieldValue');
 
+    # TODO verify that valueset now works with no values also
     # if all values got deleted we have to call ValueDelete
     # because ValueSet is unable to work on no existing values
     if ( !@ValueText ) {
@@ -507,6 +458,7 @@ sub SingleValueDelete {
     # get dynamicfieldvalue object
     my $DynamicFieldValueObject = $Kernel::OM->Get('Kernel::System::DynamicFieldValue');
 
+    # TODO verify that valueset now works with no values
     # if all values got deleted we have to call ValueDelete
     # because ValueSet is unable to work on no existing values
     if ( !@ValueText ) {
@@ -553,6 +505,7 @@ sub AllValuesDelete {
     # get database object
     my $DBObject = $Kernel::OM->Get('Kernel::System::DB');
 
+    # TODO fucking dangerous, at least check if the field id actually belongs to an attachment df!
     return if !$DBObject->Prepare(
         SQL => '
             SELECT id, value_text, value_date, value_int
@@ -616,6 +569,7 @@ sub ValueValidate {
     # get dynamicfieldvalue object
     my $DynamicFieldValueObject = $Kernel::OM->Get('Kernel::System::DynamicFieldValue');
 
+    # TODO validate mandatory
     my $Success;
     for my $Item (@Values) {
 
@@ -677,8 +631,6 @@ sub SearchSQLOrderFieldGet {
 sub EditFieldRender {
     my ( $Self, %Param ) = @_;
 
-    my $LayoutObject = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
-
     # take config from field config
     my $FieldConfig         = $Param{DynamicFieldConfig}->{Config};
     my $FieldName           = 'DynamicField_' . $Param{DynamicFieldConfig}->{Name};
@@ -718,11 +670,10 @@ sub EditFieldRender {
     my $ServerErrorHTML = '';
     my $IsMandatory     = $Param{Mandatory} || '0';
 
-    # Rother OSS / ToDo: Need to redesign DynamicFields, we don´t like to use ParamObject in Kernel/System
-    my $ParamObject     = $Kernel::OM->Get('Kernel::System::Web::Request');
-    my $InterfaceAction = $ParamObject->{Query}->{param}->{Action}[0];
+    my $InterfaceAction = $Param{ParamObject}->{Query}->{param}->{Action}[0];
     my $BaseTemplate;
 
+    # TODO check if this check can be replaced with $LayoutObject->{UserType}
     if ( $InterfaceAction && $InterfaceAction =~ /^Customer/ ) {
 
         $BaseTemplate = <<"EOF";
@@ -742,8 +693,6 @@ EOF
 
     }
 
-    # EO Rother OSS ToDo
-
     my $Index = 1;
     for my $Item (@Values) {
         $Item->{FileID}       = $Index++;
@@ -752,7 +701,7 @@ EOF
         $Item->{DeleteAction} = 'AjaxDynamicFieldAttachment';
     }
 
-    my $HTMLString = $LayoutObject->Output(
+    my $HTMLString = $Param{LayoutObject}->Output(
         Template => $BaseTemplate,
         Data     => {
             AttachmentList => \@Values,
@@ -786,6 +735,7 @@ EOF
 sub EditFieldValueGet {
     my ( $Self, %Param ) = @_;
 
+    # TODO check if this is necessary
     # if we don't have a ParamObject
     # we were called not by a FormSubmit
     # so there are no Params to get and return
@@ -827,6 +777,7 @@ sub EditFieldValueGet {
             );
         }
         else {
+            # TODO check what this is for
             return [];
         }
     }
@@ -847,7 +798,7 @@ sub EditFieldValueGet {
     for ( my $i = 0; $i < $NumberOfFiles; $i++ ) {
 
         # the submitted value looks like 0StoredMyFile.pdf
-        # where 0 is the inded of the stored values and all after "Stored" is the Filename
+        # where 0 is the index of the stored values and all after "Stored" is the Filename
         # we need this to delete gui-deleted files from storage
         # filename necessary to have enough info for displaying the entry on an erroneous submit
         # and ServerError Displaying
@@ -1191,7 +1142,7 @@ EOF
             );
         }
 
-        # article and ticket type are shown on differen places over the screen
+        # article and ticket type are shown on different places over the screen
         if (
             $Param{DynamicFieldConfig}->{ObjectType} eq 'Article'
             )
@@ -1536,11 +1487,9 @@ This function is used to get the output headers for the download
 
     my $Value = $BackendObject->AttachmentDownload(
         ObjectID           => $DynamicFieldObjectID,
-        Object             => $DynamicFieldObject,  # Ticket or Article
         DynamicFieldID     => $DynamicFieldID,
         Filename           => $AttachmentFileName,
         DynamicFieldConfig => $DynamicFieldConfig,  # complete config of the DynamicField
-        TicketObject       => $TicketObject,
         LayoutObject       => $LayoutObject,
     );
 
@@ -1567,18 +1516,21 @@ sub AttachmentDownload {
 
     $Param{UserType} //= $LayoutObject->{UserType};
 
-    # get ticket object
-    my $TicketObject = $Kernel::OM->Get('Kernel::System::Ticket');
+    my $ObjectModule = 'Kernel::System::' . ( $Param{Object} ne 'Article' ? $Param{Object} : 'Ticket::Article' );
 
-    my $TicketID;
+    # get object type object
+    my $ObjectModuleObject = $Kernel::OM->Get($ObjectModule);
+
+    my $ObjectID;
     my %Object;
+
     if ( $Param{Object} eq 'Article' ) {
 
-        $TicketID = $Kernel::OM->Get('Kernel::System::Ticket::Article')->TicketIDLookup(
+        $ObjectID = $ObjectModuleObject->TicketIDLookup(
             ArticleID => $Param{ObjectID},
         );
 
-        if ( !$TicketID ) {
+        if ( !$ObjectID ) {
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Message  => "No TicketID for ArticleID ($Param{ObjectID})!",
                 Priority => 'error',
@@ -1588,7 +1540,7 @@ sub AttachmentDownload {
     }
     elsif ( $Param{Object} eq 'Ticket' ) {
 
-        %Object = $TicketObject->TicketGet(
+        %Object = $ObjectModuleObject->TicketGet(
             TicketID      => $Param{ObjectID},
             DynamicFields => 0,
             UserID        => 1,
@@ -1600,7 +1552,7 @@ sub AttachmentDownload {
             );
             return $LayoutObject->ErrorScreen();
         }
-        $TicketID = $Object{TicketID};
+        $ObjectID = $Object{TicketID};
     }
     else {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
@@ -1613,18 +1565,22 @@ sub AttachmentDownload {
     # check permissions
     my $Access;
     if ( $Param{UserType} eq 'Customer' || $LayoutObject->{UserType} eq 'Customer' ) {
-        $Access = $TicketObject->TicketCustomerPermission(
-            Type     => 'ro',
-            TicketID => $TicketID,
-            UserID   => $Param{UserID}
-        );
+        if ( $Param{Object} eq 'Article' || $Param{Object} eq 'Ticket' ) {
+            $Access = $ObjectModuleObject->TicketCustomerPermission(
+                Type     => 'ro',
+                TicketID => $Param{ObjectID},
+                UserID   => $Param{UserID}
+            );
+        }
     }
     else {
-        $Access = $TicketObject->TicketPermission(
-            Type     => 'ro',
-            TicketID => $TicketID,
-            UserID   => $Param{UserID}
-        );
+        if ( $Param{Object} eq 'Article' || $Param{Object} eq 'Ticket' ) {
+            $Access = $ObjectModuleObject->TicketPermission(
+                Type     => 'ro',
+                TicketID => $Param{ObjectID},
+                UserID   => $Param{UserID}
+            );
+        }
     }
 
     if ( !$Access ) {
