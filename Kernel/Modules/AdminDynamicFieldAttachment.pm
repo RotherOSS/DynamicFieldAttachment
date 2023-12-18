@@ -23,6 +23,7 @@ use namespace::autoclean;
 use utf8;
 
 # core modules
+use List::Util qw(any);
 
 # CPAN modules
 
@@ -51,6 +52,14 @@ sub Run {
     );
 
     my $LayoutObject = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
+
+    my $ObjectType = $Kernel::OM->Get('Kernel::System::Web::Request')->GetParam( Param => 'ObjectType' );
+    my $AllowedObjectTypes = $Kernel::OM->Get('Kernel::Config')->Get('DynamicFields::Driver')->{'Attachment'}{'ObjectTypes'};
+    if ( IsArrayRefWithData($AllowedObjectTypes) && !any { $ObjectType eq $_ } $AllowedObjectTypes->@* ) {
+        return $LayoutObject->ErrorScreen(
+            Message => $LayoutObject->{LanguageObject}->Translate( 'Dynamic field Attachment is not implemented for object type %s!', $ObjectType ),
+        );
+    }
 
     if ( $Self->{Subaction} eq 'Add' ) {
         return $Self->_Add(

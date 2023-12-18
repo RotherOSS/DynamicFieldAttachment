@@ -9,6 +9,13 @@
                 <Item Key="Module">Kernel::System::DynamicField::Driver::Attachment</Item>
                 <Item Key="ConfigDialog">AdminDynamicFieldAttachment</Item>
                 <Item Key="ItemSeparator">, </Item>
+                <Item Key="ObjectTypes">
+                    <Array>
+                        <Item>Article</Item>
+                        <Item>ITSMConfigItem</Item>
+                        <Item>Ticket</Item>
+                    </Array>
+                </Item>
             </Hash>
         </Value>
     </Setting>
