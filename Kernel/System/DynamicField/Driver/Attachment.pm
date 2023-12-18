@@ -1550,11 +1550,13 @@ sub AttachmentDownload {
     }
     elsif ( $Param{Object} eq 'ITSMConfigItem' ) {
 
-        %Object = %{ $ObjectModuleObject->ConfigItemGet(
-            ConfigItemID  => $Param{ObjectID},
-            DynamicFields => 0,
-            UserID        => 1,
-        ) };
+        %Object = %{
+            $ObjectModuleObject->ConfigItemGet(
+                ConfigItemID  => $Param{ObjectID},
+                DynamicFields => 0,
+                UserID        => 1,
+            )
+        };
         if ( !$Object{ConfigItemID} ) {
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Message  => "No ConfigItem found for ID ($Param{ObjectID})!",
@@ -1584,10 +1586,10 @@ sub AttachmentDownload {
         }
         elsif ( $Param{Object} eq 'ITSMConfigItem' ) {
             $Access = $ObjectModuleObject->CustomerPermission(
-                Type   => 'ro',
-                Scope  => 'Item',
-                ItemID => $Param{ObjectID},
-                UserID => $Param{UserID}
+                Type         => 'ro',
+                Scope        => 'Item',
+                ConfigItemID => $Param{ObjectID},
+                UserID       => $Param{UserID}
             );
 
         }
