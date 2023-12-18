@@ -130,7 +130,7 @@
         <Navigation>Frontend::Base::Loader</Navigation>
         <Value>
             <Array>
-                    <Item>Core.DynamicFieldAttachment.css</Item>
+                <Item>Core.DynamicFieldAttachment.css</Item>
             </Array>
         </Value>
     </Setting>
