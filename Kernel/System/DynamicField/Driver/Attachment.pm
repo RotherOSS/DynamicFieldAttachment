@@ -1553,7 +1553,7 @@ sub AttachmentDownload {
 
         %Object = %{
             $ObjectModuleObject->ConfigItemGet(
-                ConfigItemID  => $Param{ObjectID},
+                VersionID     => $Param{ObjectID},
                 DynamicFields => 0,
                 UserID        => 1,
             )
@@ -1581,7 +1581,7 @@ sub AttachmentDownload {
         if ( $Param{Object} eq 'Article' || $Param{Object} eq 'Ticket' ) {
             $Access = $ObjectModuleObject->TicketCustomerPermission(
                 Type     => 'ro',
-                TicketID => $Param{ObjectID},
+                TicketID => $ObjectID,
                 UserID   => $Param{UserID}
             );
         }
@@ -1589,7 +1589,7 @@ sub AttachmentDownload {
             $Access = $ObjectModuleObject->CustomerPermission(
                 Type         => 'ro',
                 Scope        => 'Item',
-                ConfigItemID => $Param{ObjectID},
+                ConfigItemID => $ObjectID,
                 UserID       => $Param{UserID}
             );
 
@@ -1599,7 +1599,7 @@ sub AttachmentDownload {
         if ( $Param{Object} eq 'Article' || $Param{Object} eq 'Ticket' ) {
             $Access = $ObjectModuleObject->TicketPermission(
                 Type     => 'ro',
-                TicketID => $Param{ObjectID},
+                TicketID => $ObjectID,
                 UserID   => $Param{UserID}
             );
         }
@@ -1607,7 +1607,7 @@ sub AttachmentDownload {
             $Access = $ObjectModuleObject->Permission(
                 Type   => 'ro',
                 Scope  => 'Item',
-                ItemID => $Param{ObjectID},
+                ItemID => $ObjectID,
                 UserID => $Param{UserID}
             );
         }
