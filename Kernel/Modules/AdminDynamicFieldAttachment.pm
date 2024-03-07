@@ -2,7 +2,7 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2023 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2023 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2024 Rother OSS GmbH, https://otobo.de/
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -29,7 +29,7 @@ use List::Util qw(any);
 
 # OTOBO modules
 use Kernel::System::VariableCheck qw(:all);
-use Kernel::Language qw(Translatable);
+use Kernel::Language              qw(Translatable);
 
 our $ObjectManagerDisabled = 1;
 
@@ -53,7 +53,21 @@ sub Run {
 
     my $LayoutObject = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
 
-    my $ObjectType = $Kernel::OM->Get('Kernel::System::Web::Request')->GetParam( Param => 'ObjectType' );
+    # check if we clone from an existing field
+    my $ObjectType;
+    my $CloneFieldID = $Kernel::OM->Get('Kernel::System::Web::Request')->GetParam( Param => "ID" );
+    if ($CloneFieldID) {
+        my $FieldConfig = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
+            ID => $CloneFieldID,
+        );
+
+        # if we found a field config, copy its content for usage in _ShowScreen
+        if ( IsHashRefWithData($FieldConfig) ) {
+            $ObjectType = $FieldConfig->{ObjectType};
+        }
+    }
+
+    $ObjectType //= $Kernel::OM->Get('Kernel::System::Web::Request')->GetParam( Param => 'ObjectType' );
     my $AllowedObjectTypes = $Kernel::OM->Get('Kernel::Config')->Get('DynamicFields::Driver')->{'Attachment'}{'ObjectTypes'};
     if ( IsArrayRefWithData($AllowedObjectTypes) && !any { $ObjectType eq $_ } $AllowedObjectTypes->@* ) {
         return $LayoutObject->ErrorScreen(
@@ -105,8 +119,44 @@ sub _Add {
     my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
 
     my %GetParam;
+
+    # check if we clone from an existing field
+    my $CloneFieldID = $ParamObject->GetParam( Param => "ID" );
+    if ($CloneFieldID) {
+        my $FieldConfig = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
+            ID => $CloneFieldID,
+        );
+
+        # if we found a field config, copy its content for usage in _ShowScreen
+        if ( IsHashRefWithData($FieldConfig) ) {
+
+            # copy standard stuff
+            for my $Key (qw(ObjectType FieldType Label Name ValidID)) {
+                $GetParam{$Key} = $FieldConfig->{$Key};
+            }
+
+            # iterate over special stuff and copy in-depth content as flat list
+            CONFIGKEY:
+            for my $ConfigKey ( keys $FieldConfig->{Config}->%* ) {
+                next CONFIGKEY if $ConfigKey eq 'PartOfSet';
+
+                my $DFDetails = $FieldConfig->{Config};
+                if ( IsHashRefWithData( $DFDetails->{$ConfigKey} ) ) {
+                    my $ConfigContent = $DFDetails->{$ConfigKey};
+                    for my $ContentKey ( keys $ConfigContent->%* ) {
+                        $GetParam{$ContentKey} = $ConfigContent->{$ContentKey};
+                    }
+                }
+                else {
+                    $GetParam{$ConfigKey} = $DFDetails->{$ConfigKey};
+                }
+            }
+        }
+        $GetParam{CloneFieldID} = $CloneFieldID;
+    }
+
     for my $Needed (qw(ObjectType FieldType FieldOrder)) {
-        $GetParam{$Needed} = $ParamObject->GetParam( Param => $Needed );
+        $GetParam{$Needed} //= $ParamObject->GetParam( Param => $Needed );
         if ( !$GetParam{$Needed} ) {
             return $LayoutObject->ErrorScreen(
                 Message => $LayoutObject->{LanguageObject}->Translate( 'Need %s', $Needed ),
@@ -114,8 +164,8 @@ sub _Add {
         }
     }
 
-    for my $FilterParam (qw(ObjectType Namespace)) {
-        $GetParam{ $FilterParam . 'Filter' } = $ParamObject->GetParam( Param => $FilterParam . 'Filter' );
+    for my $FilterParam (qw(ObjectTypeFilter NamespaceFilter)) {
+        $GetParam{$FilterParam} = $ParamObject->GetParam( Param => $FilterParam );
     }
 
     # get the object type and field type display name
@@ -176,8 +226,8 @@ sub _AddAction {
         $GetParam{$ConfigParam} = $ParamObject->GetParam( Param => $ConfigParam );
     }
 
-    for my $FilterParam (qw(ObjectType Namespace)) {
-        $GetParam{ $FilterParam . 'Filter' } = $ParamObject->GetParam( Param => $FilterParam . 'Filter' );
+    for my $FilterParam (qw(ObjectTypeFilter NamespaceFilter)) {
+        $GetParam{$FilterParam} = $ParamObject->GetParam( Param => $FilterParam );
     }
 
     if ( !IsPositiveInteger( $GetParam{NumberOfFiles} ) ) {
@@ -307,8 +357,8 @@ sub _Change {
         }
     }
 
-    for my $FilterParam (qw(ObjectType Namespace)) {
-        $GetParam{ $FilterParam . 'Filter' } = $ParamObject->GetParam( Param => $FilterParam . 'Filter' );
+    for my $FilterParam (qw(ObjectTypeFilter NamespaceFilter)) {
+        $GetParam{$FilterParam} = $ParamObject->GetParam( Param => $FilterParam );
     }
 
     # get the object type and field type display name
@@ -413,8 +463,8 @@ sub _ChangeAction {
         $GetParam{$ConfigParam} = $ParamObject->GetParam( Param => $ConfigParam );
     }
 
-    for my $FilterParam (qw(ObjectType Namespace)) {
-        $GetParam{ $FilterParam . 'Filter' } = $ParamObject->GetParam( Param => $FilterParam . 'Filter' );
+    for my $FilterParam (qw(ObjectTypeFilter NamespaceFilter)) {
+        $GetParam{$FilterParam} = $ParamObject->GetParam( Param => $FilterParam );
     }
 
     # check if NumberOfFiles is numeric
@@ -631,7 +681,7 @@ sub _ShowScreen {
     $Param{DisplayFieldName} = 'New';
 
     my $Namespace = $Param{Namespace};
-    if ( $Param{Mode} eq 'Change' || $Param{Name} ) {
+    if ( $Param{Mode} eq 'Change' || ( $Param{Name} && !$Param{CloneFieldID} ) ) {
         $Param{ShowWarning}      = 'ShowWarning';
         $Param{DisplayFieldName} = $Param{Name};
 
@@ -710,15 +760,16 @@ sub _ShowScreen {
                     Name       => $Name,
                     Data       => $Setting->{SelectionData},
                     SelectedID => $Param{$Name} || '0',
-                    Class      => 'Modernize W50pc',
+                    Class      => 'Modernize W50pc' . ( $Param{ $Name . 'ServerError' } ? ' ServerError' : '' ),
                 );
                 $LayoutObject->Block(
                     Name => 'ConfigParamRow',
                     Data => {
-                        ConfigParamName => $Name,
-                        Label           => $Setting->{Label},
-                        FieldStrg       => $FieldStrg,
-                        Explanation     => $Setting->{Explanation},
+                        ConfigParamName    => $Name,
+                        Label              => $Setting->{Label},
+                        FieldStrg          => $FieldStrg,
+                        Explanation        => $Setting->{Explanation},
+                        ServerErrorMessage => $Param{ $Name . 'ServerErrorMessage' },
                     },
                 );
             }
