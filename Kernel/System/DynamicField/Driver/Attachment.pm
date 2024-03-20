@@ -40,6 +40,7 @@ our @ObjectDependencies = (
     'Kernel::Output::HTML::Layout',
     'Kernel::System::DB',
     'Kernel::System::DynamicFieldValue',
+    'Kernel::System::ITSMConfigItem',
     'Kernel::System::Log',
     'Kernel::System::Main',
     'Kernel::System::VirtualFS',
@@ -546,6 +547,15 @@ sub EditFieldRender {
 
     my $ObjectTypeStrg = $Param{DynamicFieldConfig}->{ObjectType} eq 'ITSMConfigItem' ? 'ConfigItem' : $Param{DynamicFieldConfig}->{ObjectType};
     my $ObjectID       = $Param{ParamObject}->GetParam( Param => $ObjectTypeStrg . 'ID' );
+
+    # for config item, translate config item id into version id
+    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' ) {
+        my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
+            ConfigItemID => $ObjectID,
+        );
+        $ObjectID = $ConfigItem->{VersionID};
+    }
+
     if ($ObjectID) {
         $OldStoredAttachments = $Self->ValueGet(
             FieldID  => $Param{DynamicFieldConfig}->{ID},
@@ -658,6 +668,15 @@ sub EditFieldValueGet {
     # this shouldn't happen
     my $ObjectTypeStrg = $Param{DynamicFieldConfig}->{ObjectType} eq 'ITSMConfigItem' ? 'ConfigItem' : $Param{DynamicFieldConfig}->{ObjectType};
     my $ObjectID       = $Param{ParamObject}->GetParam( Param => $ObjectTypeStrg . 'ID' );
+
+    # for config item, translate config item id into version id
+    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' ) {
+        my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
+            ConfigItemID => $ObjectID,
+        );
+        $ObjectID = $ConfigItem->{VersionID};
+    }
+
     if ( !$UploadFieldUID ) {
         if ($ObjectID) {
             return $Self->ValueGet(
@@ -1459,6 +1478,8 @@ sub AttachmentDownload {
             );
             return $LayoutObject->ErrorScreen();
         }
+
+        # translate version id into config item id for permission check
         $ObjectID = $Object{ConfigItemID};
     }
     else {
