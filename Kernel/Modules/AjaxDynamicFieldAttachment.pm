@@ -72,35 +72,61 @@ sub Run {
         }
         else {
 
-            # get the dynamic fields for this screen
-            my $DynamicField = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldListGet(
-                Valid => 1,
+            my $DynamicFieldConfig = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
+                ID => $AttachmentFieldID,
             );
 
-            # get dynamic field backend object
-            my $DynamicFieldBackendObject = $Kernel::OM->Get('Kernel::System::DynamicField::Backend');
+            if ( IsHashRefWithData($DynamicFieldConfig) ) {
 
-            # cycle trough the activated Dynamic Fields for this screen
-            DYNAMICFIELD:
-            for my $DynamicFieldConfig ( @{$DynamicField} ) {
-
-                next DYNAMICFIELD if !IsHashRefWithData($DynamicFieldConfig);
-                next DYNAMICFIELD if $DynamicFieldConfig->{ID} ne $AttachmentFieldID;
-
-                my $RemainingAttachments = $DynamicFieldBackendObject->SingleValueDelete(
-                    DynamicFieldConfig => $DynamicFieldConfig,
-                    FileID             => $AttachmentFileID,
-                    ObjectID           => $AttachmentObjectID,
-                    FieldID            => $AttachmentFieldID,
-                    UserID             => $Self->{UserID},
+                # remove file from upload cache
+                $Kernel::OM->Get('Kernel::System::Web::UploadCache')->FormIDRemoveFile(
+                    FormID => $Self->{FormID},
+                    FileID => $AttachmentFileID,
                 );
 
-                $Return = {
-                    Message => Translatable('Success'),
-                    Data    => $RemainingAttachments,
-                };
+                # fetch values
+                my $Value = $Kernel::OM->Get('Kernel::System::DynamicField::Backend')->ValueGet(
+                    DynamicFieldConfig => $DynamicFieldConfig,
+                    ObjectID           => $AttachmentObjectID,
+                );
 
-                last DYNAMICFIELD;
+                if ( IsArrayRefWithData($Value) ) {
+
+                    # check if index is present ( matching $Value->[$AttachmentFileID - 1] )
+                    my $FileData = $Value->[ $AttachmentFileID - 1 ];
+                    if ( IsHashRefWithData($FileData) ) {
+
+                        # we verified file validity as far as possible, now remove file from upload cache
+                        $Kernel::OM->Get('Kernel::System::Web::UploadCache')->FormIDRemoveFile(
+                            FormID => $Self->{FormID},
+                            FileID => $AttachmentFileID,
+                        );
+
+                        # return remaining files to display them correctly
+                        splice $Value->@*, $AttachmentFileID - 1, 1;
+
+                        # return remaining files
+                        $Return = {
+                            Message => Translatable('Success'),
+                            Data    => $Value,
+                        };
+                    }
+                    else {
+                        $Return->{Message} = $LayoutObject->{LanguageObject}->Translate(
+                            'Error: the file could not be deleted properly. Please contact your administrator (missing file data).'
+                        );
+                    }
+                }
+                else {
+                    $Return->{Message} = $LayoutObject->{LanguageObject}->Translate(
+                        'Error: the file could not be deleted properly. Please contact your administrator (no files stored).'
+                    );
+                }
+            }
+            else {
+                $Return->{Message} = $LayoutObject->{LanguageObject}->Translate(
+                    'Error: the file could not be deleted properly. Please contact your administrator (missing config for dynamic field).'
+                );
             }
         }
 
