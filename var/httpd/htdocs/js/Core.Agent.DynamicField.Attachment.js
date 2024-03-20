@@ -52,42 +52,6 @@ Core.Agent.DynamicField.Attachment = (function (TargetNS){
 // EO Customer Interface
     };
 
-    function IEDynamicFieldAttachmentBlurcheck(filevaluesarray){
-        $("input:file").each(function(){
-            if($(this).val()){
-                if(!filevaluesarray[this.id] || filevaluesarray[this.id] !== $(this).val()){
-                    filevaluesarray[this.id] = $(this).val();
-                    $(this).blur();
-                }
-            }
-            else if(filevaluesarray[this.id]){
-                delete filevaluesarray[this.id];
-            }
-        });
-        window.setTimeout(function(){
-            IEDynamicFieldAttachmentBlurcheck(filevaluesarray);
-        }, 500);
-    }
-
-    /**
-     * @function
-     * @description
-     *      This function blurs input type file fields on change in IE
-     * @return nothing
-     */
-     // Starts Timer for IE's only
-     if($.browser.msie){
-
-         $("input:file").each(function(){
-             filevalues[this.id] = $(this).val();
-         });
-         window.setTimeout(function(){
-             if($("input:file")){
-                IEDynamicFieldAttachmentBlurcheck(filevalues);
-             }
-         }, 500);
-     }
-
     /*
      * @function
      * @description
