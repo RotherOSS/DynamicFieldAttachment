@@ -27,6 +27,7 @@ use utf8;
 use parent qw(Kernel::System::DynamicField::Driver::BaseText);
 
 # core modules
+use List::Util qw(any none);
 use MIME::Base64 qw();
 
 # CPAN modules
@@ -206,12 +207,11 @@ sub ValueGet {
 sub ValueSet {
     my ( $Self, %Param ) = @_;
 
-    if ( IsArrayRefWithData( $Param{Value} ) ) {
-
-        return 1 if !defined $Param{Value}->[0];
-
-        $Param{Value} = $Param{Value}->[0];
+    if ( ref $Param{Value} ne 'ARRAY' ) {
+        $Param{Value} = [ $Param{Value} ];
     }
+
+    return 1 if !defined $Param{Value}->[0];
 
     my $FieldName = 'DynamicField_' . $Param{DynamicFieldConfig}->{Name};
 
@@ -231,19 +231,16 @@ sub ValueSet {
         ObjectID           => $Param{ObjectID},
     ) || [];
 
-    my @ValueText;
+    my @ValuesToStore;
 
     my $YAMLObject = $Kernel::OM->Get('Kernel::System::YAML');
 
-    # Keep old stored files
+    # Keep old stored files if they are present in param
     if ( @{$ExistingValues} ) {
-
         for my $Item ( @{$ExistingValues} ) {
-            push @ValueText, {
-                ValueText => $YAMLObject->Dump(
-                    Data => $Item,
-                ),
-            };
+            if ( any { $Item->{Filename} eq $_->{Filename} } $Param{Value}->@* ) {
+                push @ValuesToStore, $Item;
+            }
         }
     }
 
@@ -256,10 +253,10 @@ sub ValueSet {
     my $UploadFieldUID    = $Self->{ 'UploadCacheFormID' . $FieldName };
     my $FormID;
 
-    if ( !$UploadFieldUID && $Param{Value} && $Param{Value}->{FormID} ) {
-        $FormID = $Param{Value}->{FormID};
+    if ( !$UploadFieldUID && $Param{Value} && $Param{Value}[0] && $Param{Value}[0]{FormID} ) {
+        $FormID = $Param{Value}[0]{FormID};
     }
-    elsif ( !$UploadFieldUID && $Param{Value} && !$Param{Value}->{FormID} ) {
+    elsif ( !$UploadFieldUID && $Param{Value} && !$Param{Value}[0] && !$Param{Value}[0]{FormID} ) {
         $FormID = $UploadCacheObject->FormIDCreate();
 
         for my $Attachment ( $Param{Value} ) {
@@ -281,6 +278,22 @@ sub ValueSet {
     my @Attachments = $UploadCacheObject->FormIDGetAllFilesData(
         FormID => $UploadFieldUID // $FormID,
     );
+
+    # delete all values and write again
+    my $DeleteSuccess = $Self->ValueDelete(
+        DynamicFieldConfig => $Param{DynamicFieldConfig},
+        ObjectID           => $Param{ObjectID},
+        UserID             => $Param{UserID},
+    );
+
+    if ( !$DeleteSuccess ) {
+        $Kernel::OM->Get('Kernel::System::Log')->Log(
+            Priority => 'error',
+            Message  => "Cannot clear attachments for $ObjectType $Param{ObjectID}",
+        );
+
+        return;
+    }
 
     for my $Item (@Attachments) {
 
@@ -306,22 +319,35 @@ sub ValueSet {
 
             return;
         }
-        push @ValueText, {
-            ValueText => $YAMLObject->Dump(
-                Data => {
-                    Filename        => $Item->{Filename},
-                    StorageLocation => "DynamicField/$FieldID/$ObjectType/$Param{ObjectID}/$Item->{Filename}",
-                    Filesize        => $Item->{Filesize},
-                    ContentType     => $Item->{ContentType},
-                },
-            ),
-        };
+
+        if ( none { $Item->{Filename} eq $_->{Filename} } @ValuesToStore ) {
+
+            push @ValuesToStore, {
+                Filename        => $Item->{Filename},
+                StorageLocation => "DynamicField/$FieldID/$ObjectType/$Param{ObjectID}/$Item->{Filename}",
+                Filesize        => $Item->{Filesize},
+                ContentType     => $Item->{ContentType},
+            };
+        }
     }
 
     # if all files are stored correctly we'll remove the cached ones
     $UploadCacheObject->FormIDRemove(
         FormID => $UploadFieldUID // $FormID,
     );
+
+    my @ValueText = map {
+        {
+            ValueText => $YAMLObject->Dump(
+                Data => {
+                    ContentType => $_->{ContentType},
+                    Filename => $_->{Filename},
+                    Filesize => $_->{Filesize},
+                    StorageLocation => $_->{StorageLocation},
+                }
+            ),
+        }
+    } @ValuesToStore;
 
     my $Success;
 
@@ -330,24 +356,12 @@ sub ValueSet {
 
     # if all values got deleted we have to call ValueDelete
     # because ValueSet is unable to work on no existing values
-    if ( !@ValueText ) {
-        $Success = $DynamicFieldValueObject->ValueDelete(
-            FieldID  => $Param{DynamicFieldConfig}->{ID},
-            ObjectID => $Param{ObjectID},
-            UserID   => $Param{UserID},
-        );
-
-    }
-    else {
-
-        $Success = $DynamicFieldValueObject->ValueSet(
-            FieldID  => $Param{DynamicFieldConfig}->{ID},
-            ObjectID => $Param{ObjectID},
-            Value    => \@ValueText,
-            UserID   => $Param{UserID},
-        );
-
-    }
+    $Success = $DynamicFieldValueObject->ValueSet(
+        FieldID  => $Param{DynamicFieldConfig}->{ID},
+        ObjectID => $Param{ObjectID},
+        Value    => \@ValueText,
+        UserID   => $Param{UserID},
+    );
 
     return $Success;
 }
@@ -543,8 +557,6 @@ sub EditFieldRender {
         @Values = @{ $Param{Value} };
     }
 
-    my $OldStoredAttachments;
-
     my $ObjectTypeStrg = $Param{DynamicFieldConfig}->{ObjectType} eq 'ITSMConfigItem' ? 'ConfigItem' : $Param{DynamicFieldConfig}->{ObjectType};
     my $ObjectID       = $Param{ParamObject}->GetParam( Param => $ObjectTypeStrg . 'ID' );
 
@@ -557,11 +569,21 @@ sub EditFieldRender {
     }
 
     if ($ObjectID) {
-        $OldStoredAttachments = $Self->ValueGet(
-            FieldID  => $Param{DynamicFieldConfig}->{ID},
-            ObjectID => $ObjectID,
-            %Param,
-        );
+
+        VALUEITEM:
+        for my $ValueItem ( @Values ) {
+            next VALUEITEM if $ValueItem->{Content};
+
+            my $ValueGet = $Self->ValueGet(
+                FieldID  => $Param{DynamicFieldConfig}->{ID},
+                ObjectID => $ObjectID,
+                Download => 1,
+                Filename => $ValueItem->{Filename},
+                %Param,
+            );
+
+            $ValueItem->{Content} = $ValueGet->{Content};
+        }
     }
 
     my $NumberOfFiles   = $FieldConfig->{NumberOfFiles}   || 16;
@@ -599,6 +621,12 @@ EOF
         $Item->{ObjectID}     = $ObjectID;
         $Item->{FieldID}      = $Param{DynamicFieldConfig}->{ID};
         $Item->{DeleteAction} = 'AjaxDynamicFieldAttachment';
+
+        # add attachment to the upload cache
+        $Kernel::OM->Get('Kernel::System::Web::UploadCache')->FormIDAddFile(
+            FormID      => $UploadFieldUID,
+            $Item->%*,
+        );
     }
 
     my $HTMLString = $Param{LayoutObject}->Output(
@@ -691,43 +719,6 @@ sub EditFieldValueGet {
     }
 
     my $Value;
-    my @StoredAttachments;
-
-    my $OldStoredAttachments;
-    if ($ObjectID) {
-        $OldStoredAttachments = $Self->ValueGet(
-            FieldID  => $Param{DynamicFieldConfig}->{ID},
-            ObjectID => $ObjectID,
-            %Param,
-        );
-    }
-
-    # if we are dealing with a value we had in the database from an earlier submit/change
-    for ( my $i = 0; $i < $NumberOfFiles; $i++ ) {
-
-        # the submitted value looks like 0StoredMyFile.pdf
-        # where 0 is the index of the stored values and all after "Stored" is the Filename
-        # we need this to delete gui-deleted files from storage
-        # filename necessary to have enough info for displaying the entry on an erroneous submit
-        # and ServerError Displaying
-        my $FileID = $Param{ParamObject}->GetParam( Param => $FieldName . $i );
-
-        if (
-            $FileID
-            && $FileID =~ /^(\d+)Stored(.*)/
-            && IsArrayRefWithData($OldStoredAttachments)
-            && IsHashRefWithData( $OldStoredAttachments->[$1] )
-            )
-        {
-            push @StoredAttachments, {
-                FileID      => $1,
-                Filename    => $2,
-                Filesize    => $OldStoredAttachments->[$1]{Filesize},
-                ContentType => $OldStoredAttachments->[$1]{ContentType},
-                StoredValue => 1,
-            };
-        }
-    }
 
     # get uploadcache object
     my $UploadCacheObject = $Kernel::OM->Get('Kernel::System::Web::UploadCache');
@@ -736,11 +727,6 @@ sub EditFieldValueGet {
     my @Attachments = $UploadCacheObject->FormIDGetAllFilesMeta(
         FormID => $UploadFieldUID,
     );
-
-    # now let's bring together the info about the old stored attachments as well as the uploaded ones
-    if ($OldStoredAttachments) {
-        @Attachments = ( @{$OldStoredAttachments}, @Attachments );
-    }
 
     $Self->{ 'UploadCacheFilesMeta' . $FieldName } = \@Attachments;
     $Self->{ 'UploadCacheFormID' . $FieldName }    = $UploadFieldUID;
