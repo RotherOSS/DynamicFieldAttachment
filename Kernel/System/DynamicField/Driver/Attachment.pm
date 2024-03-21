@@ -272,7 +272,6 @@ sub ValueSet {
             }
         }
     }
-
     return if !$UploadFieldUID && !$FormID;
 
     my @Attachments = $UploadCacheObject->FormIDGetAllFilesData(
@@ -561,11 +560,16 @@ sub EditFieldRender {
     my $ObjectID       = $Param{ParamObject}->GetParam( Param => $ObjectTypeStrg . 'ID' );
 
     # for config item, translate config item id into version id
-    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' ) {
-        my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
-            ConfigItemID => $ObjectID,
-        );
-        $ObjectID = $ConfigItem->{VersionID};
+    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' && $ObjectID ) {
+        if ( $ObjectID eq 'NEW' ) {
+            $ObjectID = undef;
+        }
+        else {
+            my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
+                ConfigItemID => $ObjectID,
+            );
+            $ObjectID = $ConfigItem->{VersionID};
+        }
     }
 
     if ($ObjectID) {
@@ -698,11 +702,16 @@ sub EditFieldValueGet {
     my $ObjectID       = $Param{ParamObject}->GetParam( Param => $ObjectTypeStrg . 'ID' );
 
     # for config item, translate config item id into version id
-    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' ) {
-        my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
-            ConfigItemID => $ObjectID,
-        );
-        $ObjectID = $ConfigItem->{VersionID};
+    if ( $Param{DynamicFieldConfig}{ObjectType} eq 'ITSMConfigItem' && $ObjectID ) {
+        if ( $ObjectID eq 'NEW' ) {
+            $ObjectID = undef;
+        }
+        else {
+            my $ConfigItem = $Kernel::OM->Get('Kernel::System::ITSMConfigItem')->ConfigItemGet(
+                ConfigItemID => $ObjectID,
+            );
+            $ObjectID = $ConfigItem->{VersionID};
+        }
     }
 
     if ( !$UploadFieldUID ) {
