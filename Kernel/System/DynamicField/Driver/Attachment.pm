@@ -27,7 +27,7 @@ use utf8;
 use parent qw(Kernel::System::DynamicField::Driver::BaseText);
 
 # core modules
-use List::Util qw(any none);
+use List::Util   qw(any none);
 use MIME::Base64 qw();
 
 # CPAN modules
@@ -340,9 +340,9 @@ sub ValueSet {
         {
             ValueText => $YAMLObject->Dump(
                 Data => {
-                    ContentType => $_->{ContentType},
-                    Filename => $_->{Filename},
-                    Filesize => $_->{Filesize},
+                    ContentType     => $_->{ContentType},
+                    Filename        => $_->{Filename},
+                    Filesize        => $_->{Filesize},
                     StorageLocation => $_->{StorageLocation},
                 }
             ),
@@ -571,7 +571,7 @@ sub EditFieldRender {
     if ($ObjectID) {
 
         VALUEITEM:
-        for my $ValueItem ( @Values ) {
+        for my $ValueItem (@Values) {
             next VALUEITEM if $ValueItem->{Content};
 
             my $ValueGet = $Self->ValueGet(
@@ -624,7 +624,7 @@ EOF
 
         # add attachment to the upload cache
         $Kernel::OM->Get('Kernel::System::Web::UploadCache')->FormIDAddFile(
-            FormID      => $UploadFieldUID,
+            FormID => $UploadFieldUID,
             $Item->%*,
         );
     }
