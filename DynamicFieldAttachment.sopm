@@ -17,7 +17,6 @@
         <File Location="Kernel/Language/hu_OTOBODynamicFieldAttachment.pm" Permission="644" ></File>
         <File Location="Kernel/Modules/AdminDynamicFieldAttachment.pm" Permission="644" ></File>
         <File Location="Kernel/Modules/AgentDynamicFieldAttachment.pm" Permission="644" ></File>
-        <File Location="Kernel/Modules/AjaxDynamicFieldAttachment.pm" Permission="644" ></File>
         <File Location="Kernel/Modules/CustomerDynamicFieldAttachment.pm" Permission="644" ></File>
         <File Location="Kernel/Output/HTML/Templates/Standard/AdminDynamicFieldAttachment.tt" Permission="644" ></File>
         <File Location="Kernel/System/DynamicField/Driver/Attachment.pm" Permission="644" ></File>

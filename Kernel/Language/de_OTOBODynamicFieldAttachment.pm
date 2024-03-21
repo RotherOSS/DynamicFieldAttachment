@@ -43,9 +43,6 @@ sub Data {
     $Self->{Translation}->{'Could not get data for dynamic field %s!'} = 'Es konnten keine Daten für das dynamische Feld %s abgerufen werden!';
     $Self->{Translation}->{'Could not update the field %s!'}           = 'Das Feld %s konnte nicht aktualisiert werden!';
 
-    # Perl Module: Kernel/Modules/AjaxDynamicFieldAttachment.pm
-    $Self->{Translation}->{'Success'} = 'Erfolg';
-
     # JS File: Core.Agent.DynamicField.Attachment
     $Self->{Translation}->{'Disable Attachments'} = 'Anhänge deaktivieren';
 

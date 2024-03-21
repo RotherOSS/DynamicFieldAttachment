@@ -620,7 +620,7 @@ EOF
         $Item->{FileID}       = $Index++;
         $Item->{ObjectID}     = $ObjectID;
         $Item->{FieldID}      = $Param{DynamicFieldConfig}->{ID};
-        $Item->{DeleteAction} = 'AjaxDynamicFieldAttachment';
+        $Item->{DeleteAction} = 'AjaxAttachment';
 
         # add attachment to the upload cache
         $Kernel::OM->Get('Kernel::System::Web::UploadCache')->FormIDAddFile(

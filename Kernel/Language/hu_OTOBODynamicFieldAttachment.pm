@@ -43,9 +43,6 @@ sub Data {
     $Self->{Translation}->{'Could not get data for dynamic field %s!'} = 'Nem sikerült lekérni az adatokat a(z) %s dinamikus mezőhöz!';
     $Self->{Translation}->{'Could not update the field %s!'} = 'Nem sikerült frissíteni a(z) %s mezőt!';
 
-    # Perl Module: Kernel/Modules/AjaxDynamicFieldAttachment.pm
-    $Self->{Translation}->{'Success'} = 'Sikerült';
-
     # JS File: Core.Agent.DynamicField.Attachment
     $Self->{Translation}->{'Disable Attachments'} = 'Mellékletek letiltása';
 
