@@ -1204,17 +1204,7 @@ sub SearchFieldParameterBuild {
     # get field value
     my $Value = $Self->SearchFieldValueGet(%Param);
 
-    # $Value holds an array ref with an empty string if we have to search for nothing
-    # or the value we have to search for as string on the first position of the array
-    if ( ref $Value eq 'ARRAY' && defined $Value->[0] ) {
-        $Value = $Value->[0];
-    }
-
-    # If we didn't have a clean value to search for,
-    # make sure we deal at least with an empty string
-    else {
-        $Value = '';
-    }
+    $Value //= '';
 
     # set operator
     my $Operator = 'Like';
