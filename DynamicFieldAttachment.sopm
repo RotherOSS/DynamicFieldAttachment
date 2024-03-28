@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <otobo_package version="1.1">
     <Name>DynamicFieldAttachment</Name>
-    <Version>0.0.0</Version>
+    <Version>11.0.0</Version>
     <Framework>11.0.x</Framework>
     <Vendor>Rother OSS GmbH</Vendor>
     <URL>https://otobo.de/</URL>
     <License>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</License>
     <Description Lang="en">This package adds dynamic fields of type attachment.</Description>
-    <Description Lang="de">Dieses Paket fuegt DynamicFields vom Type Attachment hinzu.</Description>
+    <Description Lang="de">Dieses Paket fügt DynamicFields vom Type Attachment hinzu.</Description>
     <Description Lang="hu">Ez a csomag hozzáadja a melléklet típusú dinamikus mezőket.</Description>
     <Filelist>
         <File Location="Custom/Kernel/GenericInterface/Operation/Ticket/TicketGet.pm" Permission="644" ></File>
