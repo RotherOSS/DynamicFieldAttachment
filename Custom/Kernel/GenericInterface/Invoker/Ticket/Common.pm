@@ -2,9 +2,9 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2001-2020 OTRS AG, https://otrs.com/
-# Copyright (C) 2019-2024 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2024 Rother OSS GmbH, https://otobo.io/
 # --
-# $origin: otobo - 725b7f01f21e481775711779e1246fcb5bdbe336 - Kernel/GenericInterface/Invoker/Ticket/Common.pm
+# $origin: otobo - 4dade81e7e04433cb2aed36af0c8727d822a1c61 - Kernel/GenericInterface/Invoker/Ticket/Common.pm
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -795,6 +795,7 @@ sub HandleResponse {
                     DynamicFieldConfig => $DynamicFieldConfig,
                     ObjectID           => $Self->{RequestData}->{Data}->{TicketID},
                     Value              => $DynamicFieldData{$DynamicFieldName},
+                    ExternalSource     => 1,
                     UserID             => 1,
                 );
 
@@ -848,6 +849,7 @@ sub HandleResponse {
                 DynamicFieldConfig => $DynamicFieldConfig,
                 ObjectID           => $Self->{RequestData}->{Data}->{TicketID},
                 Value              => $Param{Data}->{TicketID},
+                ExternalSource     => 1,
                 UserID             => 1,
             );
 
